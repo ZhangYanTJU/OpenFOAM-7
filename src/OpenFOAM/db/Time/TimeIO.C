@@ -254,7 +254,7 @@ void Foam::Time::readDict()
         );
     }
 
-    scalar oldWriteInterval = writeInterval_;
+    //scalar oldWriteInterval = writeInterval_;
 
     if (controlDict_.readIfPresent("writeInterval", writeInterval_))
     {
@@ -274,8 +274,8 @@ void Foam::Time::readDict()
         controlDict_.lookup("writeFrequency") >> writeInterval_;
     }
 
-
-    if (oldWriteInterval != writeInterval_)
+    //setWriteInterval(writeInterval_);
+    /*if (oldWriteInterval != writeInterval_)
     {
         switch (writeControl_)
         {
@@ -294,7 +294,7 @@ void Foam::Time::readDict()
             default:
             break;
         }
-    }
+    }*/
 
     if (controlDict_.readIfPresent("purgeWrite", purgeWrite_))
     {
@@ -432,11 +432,12 @@ void Foam::Time::readDict()
 }
 
 
-bool Foam::Time::read()
+bool Foam::Time::read() // According to my observation, this was never called
 {
     if (controlDict_.regIOobject::read())
     {
         readDict();
+        setWriteInterval(writeInterval_);
 
         if (runTimeModifiable_)
         {
@@ -479,7 +480,14 @@ void Foam::Time::readModifiedObjects()
 
         if (controlDict_.readIfModified())
         {
-            readDict();
+            scalar oldWriteInterval = writeInterval_;
+            readDict();  // here we call crankConRod::readDict() during engine simulation
+			// for normal case, Time::readDict() is called
+            if (!equal(oldWriteInterval, writeInterval_))
+            {
+                setWriteInterval(writeInterval_);
+            }
+
             functionObjects_.read();
 
             if (runTimeModifiable_)

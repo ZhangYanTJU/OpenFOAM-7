@@ -156,7 +156,8 @@ void Foam::Time::setControls()
 
     setTime(startTime_, 0);
 
-    readDict();
+    readDict(); // here we call Time::readDict()
+    //setWriteInterval(writeInterval_); // no need during initialization
     deltaTSave_ = deltaT_;
     deltaT0_ = deltaT_;
 
@@ -956,6 +957,34 @@ void Foam::Time::setDeltaTNoAdjust(const scalar deltaT)
 {
     deltaT_ = deltaT;
     deltaTchanged_ = true;
+}
+
+
+void Foam::Time::setWriteInterval(const scalar writeInterval)
+{
+    //if (writeInterval_ == great || !equal(writeInterval, writeInterval_))
+    {
+        writeInterval_ = writeInterval;
+
+        if
+        (
+            writeControl_ == writeControl::runTime
+         || writeControl_ == writeControl::adjustableRunTime
+        )
+        {
+            // Recalculate writeTimeIndex_ for consistency with the new
+            // writeInterval
+            writeTimeIndex_ = label
+            (
+                ((value() - startTime_) + 0.5*deltaT_)/writeInterval_
+            );
+        }
+        else if (writeControl_ == writeControl::timeStep)
+        {
+            // Set to the nearest integer
+            writeInterval_ = label(writeInterval + 0.5);
+        }
+    }
 }
 
 

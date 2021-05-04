@@ -522,6 +522,9 @@ public:
             //  by function objects
             virtual void setDeltaTNoAdjust(const scalar);
 
+            //- Reset the write interval
+            virtual void setWriteInterval(const scalar writeInterval);
+
             //- Set time to sub-cycle for the given number of steps
             virtual TimeState subCycle(const label nSubCycles);
 
